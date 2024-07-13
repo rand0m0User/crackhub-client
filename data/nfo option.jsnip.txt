@@ -1,0 +1,33 @@
+//                        case "n": //print NFO
+//                            links = FetchGamePage(list[choice]);
+//                            String[] NFO = new String[1];
+//                            //a fix for console spam because the old one expected 
+//                            //the NFO link to be first 100% of the time
+//                            for (String link : links) {
+//                                if (link.contains(".nfo: ")) {
+//                                    NFO[0] = link;
+//                                    break;
+//                                }
+//                            }
+//                            if (NFO[0] != null) {
+//                                zippyshare zippyshare = new zippyshare(); //the downloader class
+//                                zippyshare.init(NFO);
+//                                zippyshare.run(1, false, true, null); //CURL, be quiet, nodir
+//                                String[] file = load(NFO[0].split(": ")[0]).split("\n");
+//                                for (String line : file) {
+//                                    print(line);
+//                                }
+//                            } else {
+//                                print("no NFO found in that page, data:" + NFO[0]);
+//                            }
+//                            break;
+                        //never really gets used so its pretty much useless
+//                        case "t": //save txt
+//                            links = FetchGamePage(list[choice]);
+//                            String hack = "";
+//                            for (String link : links) {
+//                                hack += link + "\n";
+//                            }
+//                            save(list[choice][0] + ".txt", hack);
+//                            print("saved!");
+//                            break;
