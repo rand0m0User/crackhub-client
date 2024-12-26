@@ -1,11 +1,12 @@
 package crackhubclient;
 
+import static crackhubclient.CUI.G;
 import crackhubclient.providers.Krakenfiles;
-import crackhubclient.providers.Bayfiles;
-import crackhubclient.site.CrackHub;
-import crackhubclient.site.Fitgirl;
+import crackhubclient.site.*;
 import static crackhubclient.Util.*;
-
+import crackhubclient.providers.Datanodes;
+import crackhubclient.providers.Provider;
+import org.fusesource.jansi.AnsiConsole;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -17,7 +18,15 @@ public class Main {
 
     private static boolean searching = false;
     private static String searchword = "";
-    private static final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    public static final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+    public static Krakenfiles kf = new Krakenfiles();
+    public static Datanodes dn = new Datanodes();
+
+    //public static Provider downloadersite = kf;
+    public static Provider downloadersite = dn;
+    //public static Site site = new CrackHubSite(); //its dead jim...
+    public static Site site = new FitgirlSite();
 
     public static boolean isSearching() {
         return searching;
@@ -52,6 +61,9 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        if (args.length != 0 && args[0].equals("-ship")) {
+            AnsiConsole.systemInstall();
+        }
 //        args = new String[]{"--testKrakenfiles", "https://krakenfiles.com/view/PTKoD09vQC/file.html"};
 //        if (args.length == 2 && "--testKrakenfiles".equals(args[0])) {
 //            provider p = new krakenfiles(); //the downloader class
@@ -66,24 +78,40 @@ public class Main {
 //        }
 
         int page = 1;
-        CrackHub cr = new CrackHub();
-        Fitgirl.display();
+
+        PreveiwFitgirlSite.display();
         boolean optionLoop1 = true;
         while (optionLoop1) { //main menu
             try {
                 int choice;
-                String[][] list = cr.display(page, listPageChanged, searching);
+                String[][] list = site.display(page, listPageChanged, searching);
                 listPageChanged = false; //it just updated ya see?
-                String[] links;
-                print(String.format("page: %d/%d", page, cr.getTotalPages()));
+                //String[] links;
+                print(String.format("page: %d/%d", page, site.getTotalPages()));
                 if (searching) {
-                    print("selection [1 - " + (list.length) + "] \n[e] exit, [n] next, [p] previous, [r] refresh page [x] exit search");
+                    print("selection " + G("1 - " + (list.length)));
+                    print(G("e") + " exit, "
+                            + G("n") + " next, "
+                            + G("p") + " previous, "
+                            + G("r") + " refresh page, "
+                            + G("x") + " exit search\u001B[0m\r");
                 } else {
-                    print("selection [1 - " + (list.length) + "] \n[e] exit, [n] next, [p] previous, [r] refresh page, [s] set page, [f] redeem fitgirl links, [rf] refresh fitgirl list");//, [t] redeem txt (broken)");
+                    print("selection " + G("1 - " + (list.length)));
+                    print(G("e") + " exit, "
+                            + G("n") + " next, "
+                            + G("p") + " previous, "
+                            + G("r") + " refresh page "
+                            + G("s") + " set page,\u001B[0m\r");
+                    print("\u001B[0m"
+                            + G("f") + " redeem fitgirl links, "
+                            + G("rf") + " refresh fitgirl list\u001B[0m\r");
                 }
                 //used in selecting an item
                 String optionLoop1input = br.readLine();
                 switch (optionLoop1input) {
+                    case "ds":
+                        site.debugSavePage();
+                        break;
                     case "e": //exit
                         optionLoop1 = false;
                         break;
@@ -100,7 +128,7 @@ public class Main {
                     case "s": //set page & search
                         boolean optionLoop2 = true;
                         while (optionLoop2) { //setpage menu
-                            print("[b] back, [s] search");
+                            print(G("b") + " back, " + G("s") + " search");
                             print("go to page:");
                             String optionLoop2input = br.readLine();
                             page = numberInput(optionLoop2input);
@@ -109,7 +137,7 @@ public class Main {
                                     searching = true;
                                     boolean optionLoop3 = true;
                                     while (optionLoop3) { //search term menu
-                                        print("[b] back");
+                                        print(G("b") + " back");
                                         print("enter search term:");
                                         String optionLoop3input = br.readLine();
                                         if ("b".equals(optionLoop3input)) {
@@ -138,11 +166,13 @@ public class Main {
                         listPageChanged = true;
                         continue;
                     case "rf": //refresh fitgirl list
-                        Fitgirl.display();
+                        PreveiwFitgirlSite.display();
                         continue;
-                    //disabled for now (as zippyshare links are no longer being posted and zippyshare is shutting down)
-
-                    //disabled for now (as Bayfiles links are no longer being posted)
+//                    case "bf": //browse fitgirl
+//                        site = new FitgirlSite();
+//                        downloadersite = dn;
+//                        listPageChanged = true;
+//                        continue;
                     case "f": // redeem fitgirl links
                         String[] in = load("fitgirl.txt");
                         //Provider bf = new Bayfiles(); //the downloader class
@@ -152,16 +182,20 @@ public class Main {
                         while (optionLoop4) { //item selected menu
                             boolean optionLoop5 = true;
                             while (optionLoop5) { //download option menu
-                                print("download options:\n[e] back, [b] bat, [a] automatic (may somtimes fail)");
+                                print(" download options:");
+                                print(""
+                                        + G("e") + " back, "
+                                        + G("b") + " bat, "
+                                        + G("a") + " automatic (may somtimes fail)");
                                 switch (br.readLine().toCharArray()[0] + "") { //code crush 1: duplacate code removal
                                     case "a": //download directly
-                                        Krakenfiles.init(in);
-                                        Krakenfiles.run(3, true, false, "fitgirl");//curl spam, dont be quiet, dir
+                                        downloadersite.init(in);
+                                        downloadersite.run(3, true, false, "fitgirl");//curl spam, dont be quiet, dir
                                         break;
                                     case "b":
-                                        Krakenfiles.init(in);
-                                        Krakenfiles.SetDesktop();
-                                        Krakenfiles.run(2, true, false, "fitgirl");//generate bat, dont be quiet, dir
+                                        downloadersite.init(in);
+                                        downloadersite.SetDesktop();
+                                        downloadersite.run(2, true, false, "fitgirl");//generate bat, dont be quiet, dir
                                         break;
                                     case "e": //back to game list
                                         break;
@@ -191,37 +225,20 @@ public class Main {
                 if (choice == 0) {
                     continue;
                 }
-                print("[" + choice + "] selected!");
+                print(G(choice + " selected!"));
                 choice--; //correct for the user typing 1 for list[0]
-                //print the NFO automatically
-                links = cr.fetch(list[choice]);
-                String[] nfo = new String[1];
-                //a fix for console spam because the old one expected 
-                //the NFO link to be first 100% of the time
-                for (String link : links) {
-                    if (link.contains(".nfo: ")) {
-                        nfo[0] = link;
-                        break;
-                    }
-                }
-                if (nfo[0] != null) {
-                    Krakenfiles.init(nfo);
-                    Krakenfiles.run(1, false, true, null); //CURL, be quiet, nodir
-                    String[] file = loadstring(nfo[0].split(": ")[0]).split("\n");
-                    for (String line : file) {
-                        print(line);
-                    }
-                } else {
-                    print("no NFO found in that page, data:" + nfo[0]);
-                }
+                site.printNFO(list[choice]);
                 boolean optionLoop2 = true;
                 while (optionLoop2) { //item selected menu
-                    print("[d] download now, [b] back, [e] exit");//, [n] print NFO");//, [t] save txt (" + list[choice][0] + ".txt)");
+                    print(""
+                            + G("d") + " download now, "
+                            + G("b") + " back, "
+                            + G("e") + " exit");//, [n] print NFO");//, [t] save txt (" + list[choice][0] + ".txt)");
                     switch (br.readLine().toCharArray()[0] + "") {
                         case "d": //download now
                             boolean optionLoop3 = true;
                             while (optionLoop3) { //download option menu
-                                String[] lnk = cr.fetch(list[choice]);
+                                String[] lnk = site.fetch(list[choice]);
                                 if (lnk == null) {
                                     optionLoop2 = false; //back out of "item selected menu"
                                     gamePageChanged = true;
@@ -237,15 +254,18 @@ public class Main {
                                 if (error) {
                                     print("[WARNING] incomplete link set!!!");
                                 }
-                                Krakenfiles.init(lnk);
-                                print("download options:\n[e] back, [b] bat, [a] automatic (may somtimes fail)");
+                                downloadersite.init(lnk);
+                                print("download options:");
+                                print(G("e") + " back, "
+                                        + G("b") + " bat, "
+                                        + G("a") + " automatic (may somtimes fail)");
                                 switch (br.readLine().toCharArray()[0] + "") { //code crush 1: duplacate code removal
                                     case "a": //download directly
-                                        Krakenfiles.run(3, true, false, list[choice][0]);//curl spam, dont be quiet, dir
+                                        downloadersite.run(3, true, false, list[choice][0]);//curl spam, dont be quiet, dir
                                         break;
                                     case "b":
-                                        Krakenfiles.SetDesktop();
-                                        Krakenfiles.run(2, true, false, list[choice][0]);//generate bat, dont be quiet, dir
+                                        downloadersite.SetDesktop();
+                                        downloadersite.run(2, true, false, list[choice][0]);//generate bat, dont be quiet, dir
                                         break;
                                     case "e": //back to game list
                                         break;
@@ -272,10 +292,13 @@ public class Main {
                     }
                 } //optionLoop2 ~ item selected menu
             } catch (Exception ex) { //pajeet error handling
-                print("ERROR:" + ex.getMessage());
-
+                print("\u001B[34;41;5m[ERROR]\u001B[0;31m:" + ex.getMessage());
+                ex.printStackTrace();
             }
         } //optionLoop1 ~ main menu
+        if (args.length != 0 && args[0].equals("-ship")) {
+            AnsiConsole.systemUninstall();
+        }
     }
 
     public static int numberInput(String in) {
