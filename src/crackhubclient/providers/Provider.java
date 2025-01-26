@@ -101,8 +101,18 @@ public abstract class Provider {
             }
         }
 
+        if (URLS.length == 1 && !URLS[0].endsWith(".rar")) {
+            String[] p = URLS[0].split(seperator);
+            URLS[0] = p[0] + ".rar" + seperator + p[1];
+
+            if (Main.site.isfg && !nodir && useSystemDownlads) {
+                save(out + "fgext.bat", loadbytearr(".\\tools\\fgextsingle.bat"));
+            }
+        }
+
         int counter = 0;
         for (int u = 0; u < URLS.length; u++) {
+            //print(URLS[u]);
             String fname = URLS[u].split(seperator)[0];
             PROGRESS = progressBar(URLS.length, u);
             try {
@@ -190,7 +200,7 @@ public abstract class Provider {
     public static void curlb(String URL, String fileName) throws InterruptedException, IOException {
         URL = URL.replace("\r", "");
         //print("..\\..\\__NBP_tools_dir__\\curl\\curl -L -o .\\" + fileName + " " + URL);
-        String cmd = "cmd.exe /c start curl -L -o \".\\" + fileName + "\" " + URL + "\"";
+        String cmd = "cmd.exe /c start curl -L -A \"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7\" -o \".\\" + fileName + "\" " + URL + "\"";
         print(String.format("%s %s executing command: %s", INFOHEADER, PROGRESS, cmd));
         Process p = Runtime.getRuntime().exec(cmd);
         p.waitFor();
@@ -198,13 +208,16 @@ public abstract class Provider {
 
     public static void download(String URL, String fileName) throws Exception {
         URL = URL.replace("–", "-");
+        URL = URL.replace(" ", "%20");
+        URL = URL.replace("[", "%5B");
+        URL = URL.replace("]", "%5D");
         switch (dLType) {
             case 1:
                 curl(URL, fileName);
                 break;
             case 2:
                 //if (desktop) {
-                BATURLS[bUPos] = "curl -k -L -o \".\\" + fileName + "\" \"" + URL + "\"";
+                BATURLS[bUPos] = "curl -k -L -A \"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7\" -o \".\\" + fileName + "\" \"" + URL + "\"";
                 //} else {
                 //    BATURLS[bUPos] = "curl -k -L -o \".\\" + fileName + "\" \"" + URL + "\"";
                 //}

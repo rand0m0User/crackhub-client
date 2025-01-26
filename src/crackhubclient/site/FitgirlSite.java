@@ -142,7 +142,7 @@ public class FitgirlSite extends Site {
             for (int i = 0; i < allLinks.length; i++) {
                 print(String.format("\u001B[30;42m[%d]\u001B[0m %s %s ", i, allLinks[i].unfinished ? "(unfinished)" : "", allLinks[i].provider));
             }
-            print("download selection \u001B[30;42m[1 - " + (allLinks.length) + "]\u001B[0m");
+            print("download selection "+G("1 - " + (allLinks.length)));
 
             //used in selecting an item
             String optionLoop1input = Main.br.readLine();

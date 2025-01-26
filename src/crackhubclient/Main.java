@@ -1,11 +1,9 @@
 package crackhubclient;
 
 import static crackhubclient.CUI.G;
-import crackhubclient.providers.Krakenfiles;
+import crackhubclient.providers.*;
 import crackhubclient.site.*;
 import static crackhubclient.Util.*;
-import crackhubclient.providers.Datanodes;
-import crackhubclient.providers.Provider;
 import org.fusesource.jansi.AnsiConsole;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -22,9 +20,10 @@ public class Main {
 
     public static Krakenfiles kf = new Krakenfiles();
     public static Datanodes dn = new Datanodes();
+    public static FuckingFast ff = new FuckingFast();
 
     //public static Provider downloadersite = kf;
-    public static Provider downloadersite = dn;
+    public static Provider downloadersite = ff;
     //public static Site site = new CrackHubSite(); //its dead jim...
     public static Site site = new FitgirlSite();
 
@@ -109,7 +108,7 @@ public class Main {
                 //used in selecting an item
                 String optionLoop1input = br.readLine();
                 switch (optionLoop1input) {
-                    case "ds":
+                    case "ds": //debug save page
                         site.debugSavePage();
                         break;
                     case "e": //exit
@@ -144,11 +143,10 @@ public class Main {
                                             searching = false;
                                             searchword = "";
                                         } else {
-                                            //back out of "search menu"
                                             searchword = optionLoop3input.replace(" ", "%20");
                                             break;
                                         }
-                                        optionLoop3 = false;
+                                        optionLoop3 = false; //back out of "search menu"
                                     } //optionLoop3 ~ search term menu
                                     break;
                                 case "b": //back
@@ -159,7 +157,6 @@ public class Main {
                             }
                             listPageChanged = true;
                             optionLoop2 = false;
-
                         } //optionLoop2 ~ setpage menu
                         continue;
                     case "r": //refresh
@@ -225,7 +222,7 @@ public class Main {
                 if (choice == 0) {
                     continue;
                 }
-                print(G(choice + " selected!"));
+                print(G(choice + "") + " selected!");
                 choice--; //correct for the user typing 1 for list[0]
                 site.printNFO(list[choice]);
                 boolean optionLoop2 = true;

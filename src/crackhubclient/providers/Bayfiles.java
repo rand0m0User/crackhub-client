@@ -10,9 +10,7 @@ public class Bayfiles extends Provider {
 
     @Override
     public String HandleLinkExternal(String url) throws Exception {
-        print(String.format("%s %s fetching page from: %s", INFOHEADER, PROGRESS, url));
-        curl(url, "bayfiles.html");
-        String[] file = load("bayfiles.html");
+        String[] file = webget(url);
         for (int i = 1; i < file.length; i++) {
             if (file[i].contains("class=\"btn btn-primary btn-block\"")) {
                 url = file[i + 1].split("href=\"")[1].split("\">")[0];
