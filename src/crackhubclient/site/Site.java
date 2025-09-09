@@ -33,4 +33,26 @@ public abstract class Site {
     public abstract String[] fetch(String[] choice) throws Exception;
 
     public abstract void printNFO(String[] choice) throws Exception;
+
+    //do not use with large data objects
+    public static /* utility */ linkholder[] pushlinkholder(linkholder[] in, linkholder value) {
+        linkholder[] a = new linkholder[in.length + 1];
+        System.arraycopy(in, 0, a, 0, in.length);
+        a[in.length] = value;
+        return a;
+    }
+
+    //because string[] wasnt enough
+    public static class linkholder {
+
+        public String provider;
+        public String[] links;
+        public boolean unfinished = false;
+
+        linkholder(String provider, String[] links, boolean unfinished) {
+            this.provider = provider;
+            this.links = links;
+            this.unfinished = unfinished;
+        }
+    }
 }

@@ -1,7 +1,6 @@
 package crackhubclient.site;
 
 import static crackhubclient.CUI.dropshadoWindow;
-import crackhubclient.DDGhandler;
 import static crackhubclient.Util.*;
 import java.util.Arrays;
 
@@ -11,10 +10,10 @@ public class PreveiwFitgirlSite {
         try {
             //curl("https://fitgirl-repacks.site/", "fitgirl.html");
             String[] file = webget("https://fitgirl-repacks.site/");
-            if (DDGhandler.checkddosguard(file, "https://fitgirl-repacks.site/", 3)) {//deal with DDoSguard getting in the way
-                print("[INFO] DDoSguard timed out!");
-                return;
-            }
+//            if (DDGhandler.checkddosguard(file, "https://fitgirl-repacks.site/", 3)) {//deal with DDoSguard getting in the way
+//                print("[INFO] DDoSguard timed out!");
+//                return;
+//            }
             //String[] file = load("fitgirl.html");
             print("parsing HTML...");
 
@@ -24,14 +23,14 @@ public class PreveiwFitgirlSite {
             //    print(s);
             //}
             for (int i = 0; i < file.length; i++) { //parse for real now
-                if (file[i].contains("<strong>Upcoming repacks</strong>")) {
+                if (file[i].contains("rel=\"bookmark\">Upcoming Repacks</a></h1>") || file[i].contains("<strong>Upcoming repacks</strong>")) {
                     while (true) {
                         i++;
                         if ("</h3>".equals(file[i])) {
                             break;
                         }
                         //<p><span style="color: #339966;">⇢ (Game)</span><br />
-                        if (file[i].contains("</span")) {
+                        if (file[i].contains("</span") && file[i].contains("⇢")) {
                             String game = file[i].split("⇢")[1].split("</span")[0].trim();
                             if (!game.contains("More Switch/PS3 Games")) {
                                 upcoming = push(upcoming, sanitize(game));

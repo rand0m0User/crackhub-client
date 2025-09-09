@@ -2,6 +2,7 @@ package crackhubclient.providers;
 
 import static crackhubclient.CUI.progressBar;
 import crackhubclient.Main;
+import crackhubclient.Util;
 import static crackhubclient.Util.*;
 import java.io.DataInputStream;
 import java.io.File;
@@ -12,7 +13,10 @@ import java.util.regex.Pattern;
 
 public abstract class Provider {
 
+    public static final String[] SUPPORTED_PROVIDERS = {"fuckingfast.co", "datanodes.to", "krakenfiles.com", "bayfiles.com"};
+
     public static String INFOHEADER;
+    public static String NAME;
     public static String[] URLS;
     public static String PROGRESS;
 
@@ -29,7 +33,7 @@ public abstract class Provider {
     //STRUCT: configuration
     //note: it expects URLS to be seperated with this string, so no matter where
     //you got the urls, you have to hand them to this file in the format:
-    //https://downloadhost.null/file.rar: file.rar
+    //file.rar: https://downloadhost.null/file.rar
     public static String seperator = ": ";
 
     //ENUM: downloader type
@@ -200,7 +204,7 @@ public abstract class Provider {
     public static void curlb(String URL, String fileName) throws InterruptedException, IOException {
         URL = URL.replace("\r", "");
         //print("..\\..\\__NBP_tools_dir__\\curl\\curl -L -o .\\" + fileName + " " + URL);
-        String cmd = "cmd.exe /c start curl -L -A \"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7\" -o \".\\" + fileName + "\" " + URL + "\"";
+        String cmd = "cmd.exe /c start curl -L -A \"" + Util.CLEAN_USER_AGENT + "\" -o \".\\" + fileName + "\" " + URL + "\"";
         print(String.format("%s %s executing command: %s", INFOHEADER, PROGRESS, cmd));
         Process p = Runtime.getRuntime().exec(cmd);
         p.waitFor();
@@ -217,7 +221,7 @@ public abstract class Provider {
                 break;
             case 2:
                 //if (desktop) {
-                BATURLS[bUPos] = "curl -k -L -A \"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7\" -o \".\\" + fileName + "\" \"" + URL + "\"";
+                BATURLS[bUPos] = "curl -k -L -A \"" + Util.CLEAN_USER_AGENT + "\" -o \".\\" + fileName + "\" \"" + URL + "\"";
                 //} else {
                 //    BATURLS[bUPos] = "curl -k -L -o \".\\" + fileName + "\" \"" + URL + "\"";
                 //}

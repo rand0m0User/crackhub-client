@@ -8,6 +8,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -18,6 +19,8 @@ public class Util {
         //> コンストラクタの記述が無いとSonarQubeがCode Smellと判定してしまうので明示的に何もしないコンストラクタを実装
         //<japmutt.png
     }
+
+    public static String CLEAN_USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7";
 
     public static String sanitize(String in) {
         return StringEscapeUtils.unescapeHtml4(in).replace("–", "-");
@@ -87,9 +90,18 @@ public class Util {
             URL a = new URL(url);
             HttpURLConnection b = (HttpURLConnection) a.openConnection();
             b.setRequestMethod("GET");
-            b.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.7 (KHTML, like Gecko) Chrome/16.0.912.75 Safari/535.7");
+            b.setRequestProperty("User-Agent", CLEAN_USER_AGENT);
+            long unixTimestamp = Instant.now().getEpochSecond();
+            String c = load(".\\DDG_cookie.txt")[0];
+            b.setRequestProperty("Cookie", c + unixTimestamp);
             b.setDoInput(true);
-            b.connect();
+            
+            try {
+                b.connect();
+            } catch (Exception var7) {
+                var7.printStackTrace();
+            }
+            
             List<String> ll;
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(b.getInputStream(), StandardCharsets.UTF_8)

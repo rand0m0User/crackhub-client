@@ -19,7 +19,7 @@ public class Main {
     public static final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
     public static Krakenfiles kf = new Krakenfiles();
-    public static Datanodes dn = new Datanodes();
+    //public static Datanodes dn = new Datanodes();
     public static FuckingFast ff = new FuckingFast();
 
     //public static Provider downloadersite = kf;
@@ -173,7 +173,7 @@ public class Main {
                     case "f": // redeem fitgirl links
                         String[] in = load("fitgirl.txt");
                         //Provider bf = new Bayfiles(); //the downloader class
-                        print(in.length + " links found!");
+                        print(((in.length == 1) ? "a link" : in.length + " links") + " found!");
 
                         boolean optionLoop4 = true;
                         while (optionLoop4) { //item selected menu

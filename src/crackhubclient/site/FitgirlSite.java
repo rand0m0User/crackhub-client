@@ -1,7 +1,6 @@
 package crackhubclient.site;
 
 import static crackhubclient.CUI.*;
-import crackhubclient.DDGhandler;
 import crackhubclient.Main;
 import static crackhubclient.Main.*;
 import static crackhubclient.Util.*;
@@ -19,13 +18,7 @@ public class FitgirlSite extends Site {
 
     private static linkholder[] allLinks = new linkholder[0]; // format: [index] [provider name] [link(s)...]
 
-    //do not use with large data objects
-    private static /* utility */ linkholder[] pushlinkholder(linkholder[] in, linkholder value) {
-        linkholder[] a = new linkholder[in.length + 1];
-        System.arraycopy(in, 0, a, 0, in.length);
-        a[in.length] = value;
-        return a;
-    }
+    private static linkholder[] updateLinks = new linkholder[0]; // format: [index] [provider name] [link(s)...]
 
     @Override
     public void printNFO(String[] choice) throws Exception {
@@ -36,6 +29,7 @@ public class FitgirlSite extends Site {
 
     @Override
     public String[] fetch(String[] choice) throws Exception {
+        //real fetch
         return fetch(choice, false);
     }
 
@@ -46,16 +40,19 @@ public class FitgirlSite extends Site {
             //curl(choice[2], "game.html");
             gamePageChangeAcknolage();
         }
-        if (DDGhandler.checkddosguard(GAME_HTML, choice[2], 10)) {//deal with DDoSguard getting in the way
-            DDGtimeout();
-            return null;
-        }
+//        if (DDGhandler.checkddosguard(GAME_HTML, choice[2], 10)) {//deal with DDoSguard getting in the way
+//            DDGtimeout();
+//            return null;
+//        }
         //String[] file = load("game.html");
         //handle being flagged by ddosguard......
         boolean read = false;
         boolean readnfo = false;
+        boolean readupdates = false;
+        boolean hasuptates = false;
         NFO_TEXT = new String[0]; //clear
         String singlename = "NULL";
+        String[] updatesLinks = new String[0];
         for (int i = 0; i < GAME_HTML.length; i++) { //parse the download links from the HTML page
             if (GAME_HTML[i].contains("<meta property=\"og:title\" content=\"")) {
                 singlename = sanitize(GAME_HTML[i].split("content=\"")[1].split("\"")[0]).replace(":", "-");
@@ -78,6 +75,8 @@ public class FitgirlSite extends Site {
                                 break;
                             }
                             if (GAME_HTML[i + j].startsWith("<a href=\"")) {
+                                //<a href="https://down.ld/Game.part001.rar" target="_blank" rel="noopener nofollow">Game.part001.rar</a><br />
+                                //parse:   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                                          ^^^^^^^^^^^^^^^^
                                 String link = sanitize(GAME_HTML[i + j].split("nofollow\">")[1].split("<")[0]) + ": " + GAME_HTML[i + j].split("\"")[1];
                                 spoilerLinks = push(spoilerLinks, link);
                             }
@@ -125,6 +124,20 @@ public class FitgirlSite extends Site {
                         ));
                     }
                 }
+                if (GAME_HTML[i].contains("<h3>Game Updates")) { //end of download section
+                    readupdates = true;
+                    hasuptates = true;
+                }
+
+                if (readupdates) {
+                    if (GAME_HTML[i].startsWith("<li><a href=\"")) {
+                        String link = sanitize(GAME_HTML[i].split("<li><a href=\"")[1].split("\" target=\"_blank\"")[0]) + ": " + GAME_HTML[i].split("rel=\"noopener\">")[1].split("</a>")[0];
+                        updatesLinks = push(updatesLinks, link);
+                    }
+                }
+                if (GAME_HTML[i].contains("</div>")) { //end of update section
+                    readupdates = false;
+                }
                 if (GAME_HTML[i].contains("</article>")) { //end of page
                     break;
                 }
@@ -142,7 +155,21 @@ public class FitgirlSite extends Site {
             for (int i = 0; i < allLinks.length; i++) {
                 print(String.format("\u001B[30;42m[%d]\u001B[0m %s %s ", i, allLinks[i].unfinished ? "(unfinished)" : "", allLinks[i].provider));
             }
-            print("download selection "+G("1 - " + (allLinks.length)));
+            print("download selection " + G("1 - " + (allLinks.length)) + ((hasuptates) ? " download updates " + G("du") : ""));
+
+            //estimate full download size
+            long totalsize = 0;
+            boolean binsfound = false;
+            for (String l : allLinks[1].links) {
+                if (l.endsWith(".rar")) {
+                    totalsize += 524288000;
+                } else if (l.endsWith(".bin")) {
+                    binsfound = true;
+                }
+            }
+            totalsize = totalsize / 1000000000;
+
+            print("estimated download size: " + totalsize + ((binsfound) ? "GB, ±512MB+ (including extra bin archives)" : "GB, ±512MB"));
 
             //used in selecting an item
             String optionLoop1input = Main.br.readLine();
@@ -150,6 +177,12 @@ public class FitgirlSite extends Site {
                 case "b": //back
                     optionLoop1 = false;
                     return new String[]{""};
+                case "du": //download updates
+                    if (!hasuptates) {
+                        continue;
+                    }
+                    filecryptSite fc = new filecryptSite();
+                    return fc.fetchallupdates(updatesLinks);
             }
             dlchoice = Main.numberInput(optionLoop1input);
             if (dlchoice > allLinks.length) {
@@ -178,7 +211,7 @@ public class FitgirlSite extends Site {
             SITE_HTML = webget(siteURL);
             //curl(siteURL, "scene.html");
         }
-        DDGhandler.checkddosguard(SITE_HTML, siteURL, 10);//deal with DDoSguard getting in the way
+        //DDGhandler.checkddosguard(SITE_HTML, siteURL, 10);//deal with DDoSguard getting in the way
         //String[] file = load("scene.html");
         print("parsing HTML...");
         int games = 0;
@@ -228,19 +261,5 @@ public class FitgirlSite extends Site {
         listPageChangeAcknolage();
         return list;
 
-    }
-
-    //because string[] wasnt enough
-    static class linkholder {
-
-        public String provider;
-        public String[] links;
-        public boolean unfinished = false;
-
-        linkholder(String provider, String[] links, boolean unfinished) {
-            this.provider = provider;
-            this.links = links;
-            this.unfinished = unfinished;
-        }
     }
 }

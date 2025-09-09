@@ -3,6 +3,7 @@ package crackhubclient.providers;
 import static crackhubclient.Util.*;
 
 public class Bayfiles extends Provider {
+    //pretty sure this site died a long time ago???
 
     static {
         INFOHEADER = "[bayfiles downloader]";
